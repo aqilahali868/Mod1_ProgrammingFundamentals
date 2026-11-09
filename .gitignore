@@ -1,7 +1,35 @@
+
+#Files to Ignore
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
 .httr-oauth
 .DS_Store
-.quarto
+
+
+# Extensions to ignore
+*.html
+.png
+.jpg
+.jpeg
+.eps
+.pdf
+.bmp
+.svg
+.tiff
+* .Rproj
+
+
+# Folders to ignore
+archive/
+scratch/
+test/
+
+# Keywords to ignore
+*archive
+*.quarto
+*quarto-html
+*_files
+*bootstrap
+*tutor*
