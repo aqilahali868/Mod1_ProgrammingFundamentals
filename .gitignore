@@ -9,7 +9,7 @@
 
 
 # Extensions to ignore
-*.html
+#.html
 .png
 .jpg
 .jpeg

@@ -1,0 +1,311 @@
+---
+title: "Wkshop4_Copilot"
+format: html
+editor: visual
+---
+
+Preparing Workspace
+
+```{r}
+library(tidyverse)
+library(palmerpenguins)
+```
+
+Prompting for Multi-Variable Scatter Plot
+
+```{r}
+#Create a ggplot scatter plot using penguins dataset
+#Plot bill_length_mm on x-axis and bill_depth_mm on y-axis
+#Colour points by species and use geom_point with size = 3
+#Add minimal theme and clean labels
+
+ggplot(data = penguins, aes(x = bill_length_mm, y = bill_depth_mm, color = species)) +
+  geom_point(size = 2) +
+  theme_minimal() +
+  labs(title = "Bill Length vs Bill Depth by Species",
+       x = "Bill Length (mm)",
+       y = "Bill Depth (mm)",
+       color = "Species")
+
+```
+
+Open-Ended Comparative Plotting Distribution check
+
+```{r}
+
+#Generate a boxplot comparing flipper_length_mm across species
+#Facet by island
+#Use geom_boxplot with fill = species and alpha = 0.7
+
+ggplot(data = penguins, aes(x = species, y = flipper_length_mm, fill = species)) +
+  geom_boxplot(alpha = 0.7) +
+  facet_wrap(~ island) +
+  theme_minimal() +
+  labs(title = "Flipper Length Distribution by Species and Island",
+       x = "Species",
+       y = "Flipper Length (mm)",
+       fill = "Species")
+```
+
+Biomass check
+
+```{r}
+
+#Generate scatter plot comparing body_mass_g and flipper_length_mm
+#Add linear regression line with geom_smooth(method = "lm", se = FALSE) for each species
+
+ggplot(data = penguins, aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
+  geom_point(size = 2) +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_minimal() +
+  labs(title = "Body Mass vs Flipper Length by Species",
+       x = "Flipper Length (mm)",
+       y = "Body Mass (g)",
+       color = "Species")
+
+```
+
+Morphology check
+
+```{r}
+
+#Generate boxplot comparing flipper_length_mm with body_mass_g across species
+
+ggplot(data = penguins, aes(x = flipper_length_mm, y = body_mass_g, colour = species)) +
+  geom_point(alpha = 0.7) +
+  theme_minimal() +
+  labs(title = "Body Mass Distribution by Species",
+       x = "Flipper Length (mm)",
+       y = "Body Mass (g)",
+       colour = "Species")
+
+```
+
+Tidyverse Logic
+
+```{r}
+#Load tidyverse
+library(tidyverse)
+
+#Sample coral data 
+coral_monitoring <- tibble(site = c("A", "B", "C"), depth_m = c(12, 35, 8))
+
+#if_else() function is used to classify data based on a condition. It takes three arguments: a logical condition, a value to return if the condition is TRUE, and a value to return if the condition is FALSE.
+
+#Classify depth using if_else ##name of object can be the same to "replace" original
+reef_class <- coral_monitoring %>%
+  mutate(zone = if_else(depth_m >30, "Deep Reef", "Shallow Reef"))
+reef_class
+
+# function mutate()  created new column, modify specified column, or remove column
+# %>% is a pipe operator that passes the output of one function to the next function
+
+
+#case_when() function is used to create new variables based on multiple conditions. It takes a series of logical conditions and corresponding values to return for each condition, 
+#It provides a clean, sequential evaluation layout using formula tildes (~) to separate conditions and values.
+reef_categories <- coral_monitoring %>%. ##name of object can be the same to "replace" original 
+  mutate(reef_category = case_when(
+    depth_m < 10 ~ "Lagoon/Reef Flat",
+    depth_m <= 30 ~ "Reef Crest/Slope",
+    depth_m > 30 ~ "Deep Reef",
+    TRUE ~ "Unclassified" #Catch all remainder
+  ))
+
+reef_categories
+
+```
+
+Environmental Stress Classification
+
+```{r}
+
+#Generate tibble named "marine_stations" with columns: salinity (35, 28, 32, 12).
+#Use pipe operator and mutate combines with case_when() to create new column names "environment_type"
+#Classify "environmental_type" by <15 = "Estuarine", 15-30 = "Brackish", >30 = "Marine"
+
+library(tidyverse)
+
+marine_stations <- tibble(salinity = c(35, 28, 32, 12))
+environment_classification <- marine_stations %>%
+  mutate(environment_type = case_when(
+    salinity < 15 ~ "Estuarine",
+    salinity >= 15 & salinity <= 30 ~ "Brackish",
+    salinity > 30 ~ "Marine",
+    TRUE ~ "Unclassified"
+  ))
+environment_classification
+
+```
+
+Automation & Iterating Efficiently
+
+```{r}
+
+#creating for-loops 
+
+#Base R - classic loop anatomy
+#   for (year in 2020:2024){
+#     print(paste("Processing climate data for year:", year"))
+#   }
+
+#e.g., loop across index sequences
+transect_length <- c(50, 100, 25, 75)
+
+for (i in seq_along(transect_length)){
+  print(paste("Transect number", i, "measures", transect_length[i], "meters."))
+}
+```
+
+```{r}
+# Tidyverse alternative 
+library(tidyverse)
+site_areas <- c(144, 400, 625)
+results <- numeric(length(site_areas)) #Must build an empty vector to store results
+                   for(i in seq_along(site_areas)){
+                     results[i] <- sqrt(site_areas[i])
+                   }
+results
+
+#using purr equivalent 
+#Map directly and define expected output type explicitly 
+mapped_results <- map_dbl(site_areas, sqrt)
+mapped_results
+
+```
+
+```{r}
+#Iterating Across Complex Groups 
+#iris <- iris
+iris %>% split (.$Species) %>% map (~summary(.x)) #split entire dataset by species and apply summary function to each group
+
+# .$ selects the "Species" column from the iris dataset, which is used as the grouping variable for the split() function.
+# ~ defines an anonymous function that takes each subset of the data (represented by .x) and applies the summary() function to it.
+
+```
+
+Writing Custom Functions
+
+```{r}
+
+#Function Construction Blueprint
+
+#Function Definition
+calculate_coral_mortality <- function(initial_count, survival_count) {
+  #Logic safety switch using Condition tools
+  if(initial_count <= 0){
+    stop("Initial count must be greater than zero.")
+  }
+  mortality_rate <- (initial_count - survival_count) / initial_count
+  return(mortality_rate)
+}
+
+#Using custom function 
+calculate_coral_mortality(initial_count = 120, survival_count = 84)
+```
+
+Build a custom function named convert_temp_c_to_f that accepts a single argument representing temperature in Celsius. The function should perform the math conversion: F = (C \* 9/5) + 32. Include a conditional safety check using an if statement that halts execution via stop() if the entered value is below absolute zero (-273.15 degrees Celsius). Test your function with both a valid temperature and an invalid value to ensure the error handling behaves as expected.
+
+```{r}
+
+#Function Definition
+convert_temp_c_to_f <- function(celsius) {
+  #Logic safety switch using Condition tools
+  if(celsius <0){
+    stop("Temperature cannot be below absolute zero (-273.15°C).")
+  }
+  farenhiet <- (celsius * 9/5) + 32
+  return(farenhiet)
+}
+
+#Using custom function 
+convert_temp_c_to_f(celsius = 17) #Expected output: 62.6
+convert_temp_c_to_f(celsius = 40) #Expected output: 104
+convert_temp_c_to_f(celsius = -10) #Expected output: Error message
+
+```
+
+Advanced Scripting Extension Challenges
+
+Challenge 1: Nested Multi-Vector Iterations In real-world field surveys, calculations often depend on matching values across multiple lists or matrices. Read the documentation for purrr::map2_dbl(). Given a vector of raw survey counts counts \<- c(15, 24, 8, 42) and a vector of species-specific scaling factors factors \<- c(1.2, 0.8, 2.5, 1.1), write a mapping statement that iterates across both vectors simultaneously to return a single vector of scaled abundance values. Do not use a manual index loop.
+
+```{r}
+
+count <- c(15, 24, 8, 42)
+scaling_factors <- c(1.2, 0.8, 2.5, 1.1) #species_specific
+#Write a mapping statement across both vectors, simultaneously to return a singe vector
+#Use map2_dbl() to iterate across both vectors and return a single vector of scaled abundance values
+#Note: no manual index loop 
+
+result <- map2_dbl(count, scaling_factors, ~ .x * .y)
+result
+
+```
+
+Challenge 2: Robust Data Wrangling Pipeline Function Create a custom function named clean_and_classify_survey that handles complex data frame structures. The function must fulfill these criteria: Accept a data frame and a column name threshold parameter as inputs. Safely check if the specified column name exists within the passed data frame; if it does not, trigger a user-friendly error message using stop(). Filter out rows containing missing values (NA) within that specific column. Use the pipe operator and mutate() along with a vectorised conditional (if_else() or case_when()) to append a status string variable classification based on your threshold parameter. Return the cleaned, altered data frame to the global environment. Test your custom pipeline using a mock tibble that contains at least one missing value to confirm your code handles anomalies without crashing.
+
+```{r}
+
+#Function Definition
+#accept data frame and column name as inputs
+clean_and_classify_survey <- function(data, site) {
+  #Logic safety switch using Condition tools: check if column name exists in the data frame
+  #Does not trigger error message if column name is valid
+  if_else(!site %in% colnames(data))
+    #filter rows containing NAs
+    na.omit_data <- data %>% filter(!is.na(.data[[site]]))
+    #mutate and vectorised conditional (if_else()) or case_when() to append a status string variable classification based on the values in the specified column
+    mutate_data <- na.omit_data %>%
+      mutate(classification = case_when(
+        .data[[site]] < 10 ~ "Low",
+        .data[[site]] >= 10 & .data[[site]] <= 20 ~ "Medium",
+        .data[[site]] > 20 ~ "High",
+        TRUE ~ "Unclassified"
+      ))
+      return(mutate_data) #Return the cleaned, altered data frame to the global environment
+}
+  
+data <- tibble(
+  site = c("A", "B", "C", "D"),
+  count = c(5, 15, NA, 25)
+)
+
+```
+
+Working Code
+
+```{r}
+library(dplyr)
+
+clean_and_classify_survey <- function(data, site) {
+  # Logic safety switch: check if column name exists in the data frame
+  if (!site %in% colnames(data)) {
+    stop(paste("Error: Column", site, "does not exist in the data frame."))
+  }
+  
+  # Filter rows containing NAs in the specified column
+  na.omit_data <- data %>% 
+    filter(!is.na(.data[[site]]))
+  
+  # Append a status string variable classification based on the values
+  mutate_data <- na.omit_data %>%
+    mutate(classification = case_when(
+      .data[[site]] < 10 ~ "Low",
+      .data[[site]] >= 10 & .data[[site]] <= 20 ~ "Medium",
+      .data[[site]] > 20 ~ "High",
+      TRUE ~ "Unclassified"
+    ))
+  
+  return(mutate_data) 
+}
+
+# Create the test data frame
+data <- tibble(
+  site = c("A", "B", "C", "D"),
+  count = c(5, 15, NA, 25)
+)
+
+# Run the function using "count" as the column target
+cleaned_data <- clean_and_classify_survey(data, "count")
+print(cleaned_data)
+
+```

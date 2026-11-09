@@ -1,0 +1,275 @@
+---
+title: "Wrkshop2_Visualisation"
+format: html
+editor: visual
+---
+
+# Reading Data
+
+```{r}
+library(tidyverse)
+library(gridExtra)
+
+```
+
+Working dataframe = mpg (found in ggplot2: variables e.g., displ,, hwy, model, year etc.))
+
+```{r}
+
+ggplot(data = mpg) + #define what dataset to use in the plot
+  geom_point(mapping = aes(x = displ, y = hwy)) #basic scatter plot, aes = define what variables to map x,y
+
+# ggplot (data = <DATA>) +
+#   <GEOM_FUNCTION> (mapping = aes (<MAPPINGS>))
+# Functions : point, map, boxplot, dotplot etc. 
+# Aes : size, shape, fill, colour 
+
+```
+
+```{r}
+
+#AES Change colour (colour) by class/scale_colour_gradient or define colour = "green" or HEXcode "#00abff") *outside of aes
+
+pcol <- ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, colour = class)) 
+
+
+#AES Change Point size(size) by class or define size = 0 to 5 *outside of aes
+
+psize <- ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, size = class)) #not advised
+
+
+#AES Change Point transparency (alpha) by class or name alpha = 0 to 1 *outside of aes
+
+ptran <- ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, alpha = class)) #not advised
+
+
+#AES Change Point shape (shape  by class , or name shape = square *outside of aes)
+
+pshp <- ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, shape = class)) #best for <6 discrete values 
+
+
+# Arrange into 2 rows and 2 columns
+grid.arrange(pcol, psize, ptran, pshp, ncol = 2, nrow = 2)
+
+```
+
+AES Customization & Additional ggplot functions
+
+```{r}
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, colour = class), shape = "triangle") +
+  theme_classic() +
+  labs(x = "display", y = "highway")
+
+#adding numeric category 
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, colour = displ <5)) #all values <5 = TRUE
+ 
+```
+
+Facet and Panel plots
+
+```{r}
+# multiple plots in 1 "frame" e.g., ggplot facet_wrap *only for discrete variables
+
+# for a single variable e.g., class use ##facet_warp
+face1 <- ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy), size = 0.7) +
+  facet_wrap(~class, nrow = 2) #i.e., plot data for each class individually in 2 rows 
+
+# for multiple variables e.g., drv ~ cyl use ##facet_grid
+face2 <- ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy), size = 0.7) +
+  facet_grid(drv ~ cyl) 
+
+# for non row/column dimensions use ##facet_grid(. ~ cyl)
+face3 <- ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy), size = 0.7) +
+  facet_grid(. ~ cyl) #merges all hwy into single row 
+
+#nrow/ ncol = defines number of rows/columns in plot
+#labeller = label for each subset/plot
+
+# Arrange into 2 rows and 2 columns
+grid.arrange(face1, face2, face3, ncol = 2, nrow = 2)
+
+```
+
+Fitting Simple Lines
+
+```{r}
+ 
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy), size = 0.7) +
+  geom_smooth(mapping = aes(x = displ, y = hwy, linetype = drv, colour = drv)) 
+#added line of best fit through scatter plot
+#each line corresponds to class of drv
+
+```
+
+AES to categorical variable
+
+```{r}
+
+p1 <- ggplot(data = mpg) +
+  geom_smooth(mapping = aes(x = displ, y = hwy)) #no grouping
+
+p2 <- ggplot(data = mpg) +
+  geom_smooth(mapping = aes(x = displ, y = hwy, group = drv)) #grouping, no colour diff
+
+p3 <- ggplot(data = mpg) +
+  geom_smooth(mapping = aes(x = displ, y = hwy, colour = drv), show.legend = FALSE) #group & colour diff
+
+# Arrange into 2 rows and 2 columns
+grid.arrange(p1, p2, p3, ncol = 2, nrow = 2)
+```
+
+Overarching mapping in base ggplot
+
+```{r}
+
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy))+
+  geom_point()+ #style points
+  geom_smooth() #style lines
+#this reduces duplication in code & errors when changing variables
+
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy))+
+  geom_point(mapping = aes(colour = class))+
+  geom_smooth(data = filter(mpg, class == "subcompact"), se = FALSE)+
+  theme_classic()
+
+#filter subset of data
+
+```
+
+Plotting Statistics
+
+```{r}
+library(ggplot2)
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut)) #categorize cut based on levels
+
+ggplot(data = diamonds) + 
+  stat_count(mapping = aes(x = cut))
+  
+```
+
+Overriding default in ggplot2
+
+```{r}
+library(tidyverse)
+
+demo <- tribble(
+  ~cut,         ~freq,
+  "Fair",       1610,
+  "Good",       4906,
+  "Very Good",  12082,
+  "Premium",    13791,
+  "Ideal",      21551
+)
+demo #shows manual dataframe added 
+  
+ident <- ggplot(data = demo) +
+  geom_bar(mapping = aes(x = cut, y = freq), stat = "identity") #plotted data
+
+
+prop <- ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, y = stat(prop), group = 1))
+#bar chart for the proportion of total diamonds based on cut, group = 1 to treat all data as a single group
+
+
+#Plotting Statistical Details 
+#stat_summary() function to plot summary statistics (e.g., min, max, median) for a continuous variable (e.g., depth) across a categorical variable (e.g., cut)
+
+stsum <- ggplot(data = diamonds) +
+  stat_summary(mapping = aes(x = cut, y = depth), 
+               fun.nmin = min, 
+               fun.max = max, 
+               fun = median)
+
+# Arrange into 2 rows and 2 columns
+grid.arrange(ident, prop, stsum, ncol = 2, nrow = 2)
+
+```
+
+Aesthetic adjustments Colour & fill adjustments
+
+```{r}
+
+fcut <- ggplot(data = diamonds) +
+  geom_bar(mapping = aes(x = cut, fill = cut)) #fill colour based on cut
+
+colcut <- ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, colour = cut)) #outline colour based on cut
+
+fclar <- ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity)) #fill colour based on clarity
+
+# Arrange into 2 rows and 2 columns
+grid.arrange(fcut, colcut, fclar, ncol = 2, nrow = 2)
+
+```
+
+Positional adjustments e.g., identity,(raw data), fill(changes heights) and dodge(no staking) Position = "identity" (raw data overlapping i.e. stacking)
+
+```{r}
+
+#to alter transparency (alpha)
+tclar <- ggplot(data = diamonds, mapping = aes(x = cut, fill = clarity))+
+  geom_bar(alpha = 1/5, position = "identity") #raw data overlapping i.e. stacking
+
+#to alter bar outlines w/ no fill
+colclar <- ggplot(data = diamonds, mapping = aes (x = cut, colour = clarity))+
+  geom_bar(fill = NA, position = "identity") #raw data overlapping i.e. stacking
+
+# Arrange into 2 rows and 2 columns
+grid.arrange(tclar, colclar, ncol = 2, nrow = 1)
+
+```
+
+```{r}
+#Position = "fill" ####
+#(standardize height of each bar to 1 i.e.,all bars same height)
+#function: position = "fill" place each object exactly on graph, but standardize height of each bar to 1
+
+posfill <- ggplot(data = diamonds)+
+  geom_bar(mapping = aes(x = cut, fill = clarity), position = "fill") 
+
+
+#Position = "dodge" ####
+#(shows trends per category, place each object exactly on graph, but dodge bars next to each other)
+#function = "dodge" place each object exactly on graph, but dodge bars next to each other
+
+posdodge <- ggplot(data = diamonds)+
+  geom_bar(mapping = aes(x = cut, fill = clarity), position = "dodge")
+
+
+#Position = "jitter" ####
+#(adds random noise to the location of each point to reduce over plotting)
+
+posjit <- ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy), position = "jitter")
+
+#Arrange into 2 rows and 2 columns
+grid.arrange(posfill, posdodge, posjit, ncol = 2, nrow = 2)
+
+```
+
+GGPLOT TEMPLATE
+
+```{r}
+
+#   ggplot(data = <DATA>) +
+  #     <GEOM_FUNCTION>(mapping = aes(<MAPPINGS>), 
+  #        stat = <STAT>, 
+  #        position = <POSITION>) +
+  #     <FACET_FUNCTION (wrap or grid> +
+  #     <THEME_FUNCTION> +
+  #     <LABS_FUNCTION>)
+
+```

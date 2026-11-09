@@ -1,0 +1,29 @@
+---
+title: "Wkshop3_GitHUB"
+format: html
+editor: visual
+---
+
+Cloning REPOS
+
+1.  Get URL for the repository you want to clone from GitHub.
+
+2.  In RStudio: File \> New Project \> Version Control \> Git \> Paste the URL of the repository you want to clone \> Name Cloned Project \> Create Project as subdirectory (select folder/file path) \> Create Project
+
+3.  Check Project Name, Git in Panel and Folder for .Rproj
+
+Setting up Repository
+
+```{r}
+
+# usethis::use_git()  to initialize a Git repository
+
+# usethis::use_github()  to create a GitHub repository & push the local repository to GitHub
+
+```
+
+IN R: Tools \> Project Options \> Git/SVN \> Check "Version control system" \> Git (confirm New Git Repository)
+
+Workflow with GitHub Edit -\> Save -\> Stage -\> Commit -\> Pull -\> Push and Repeat
+
+A - added D - deleted M - modified R - renamed ? - untracked
